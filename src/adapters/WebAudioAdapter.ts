@@ -49,6 +49,9 @@ export class WebAudioAdapter implements AudioAdapter {
       scheduleGain(value: number, audioTime: number) {
         gainNode.gain.linearRampToValueAtTime(value, audioTime);
       },
+      scheduleFrequency(hz: number, audioTime: number) {
+        oscillator.frequency.exponentialRampToValueAtTime(hz, audioTime);
+      },
       start(audioTime: number) {
         oscillator.start(audioTime);
       },

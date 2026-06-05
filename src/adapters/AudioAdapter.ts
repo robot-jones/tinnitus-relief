@@ -23,6 +23,9 @@ export interface ToneHandle {
   /** Schedule the gain to ramp to `value` at `audioTime`. */
   scheduleGain(value: number, audioTime: number): void;
 
+  /** Schedule an exponential frequency ramp to `hz` at `audioTime`. */
+  scheduleFrequency(hz: number, audioTime: number): void;
+
   /** Start the oscillator at `audioTime` (must be called before scheduleGain). */
   start(audioTime: number): void;
 
