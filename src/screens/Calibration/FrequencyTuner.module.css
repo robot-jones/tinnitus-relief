@@ -99,11 +99,43 @@
   cursor: pointer;
 }
 
+.muteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  transition: color var(--transition-fast);
+}
+
+.muteBtn:hover {
+  color: var(--color-text);
+}
+
+.muteBtn[aria-pressed='true'] {
+  color: var(--color-accent);
+}
+
+.sliderMuted {
+  opacity: 0.35;
+}
+
 .sliderEndLabels {
   display: flex;
   justify-content: space-between;
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
+}
+
+.sliderEndLabelsIndented {
+  padding-left: calc(32px + var(--space-3));
 }
 
 .confirmBtn {

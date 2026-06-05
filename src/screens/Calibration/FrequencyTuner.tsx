@@ -33,6 +33,7 @@ interface Props {
 export default function FrequencyTuner({ ear, initialHz = 4000, audioService, onConfirm }: Props) {
   const [sliderValue, setSliderValue] = useState(() => hzToSlider(initialHz));
   const [volume, setVolume] = useState(5);
+  const [muted, setMuted] = useState(false);
   const liveHandleRef = useRef<LiveToneHandle | null>(null);
 
   const currentHz = sliderToHz(sliderValue);
@@ -71,7 +72,13 @@ export default function FrequencyTuner({ ear, initialHz = 4000, audioService, on
   function handleVolumeChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = Number(e.target.value);
     setVolume(value);
-    liveHandleRef.current?.setGain(value / 10);
+    if (!muted) liveHandleRef.current?.setGain(value / 10);
+  }
+
+  function handleMuteToggle() {
+    const nextMuted = !muted;
+    setMuted(nextMuted);
+    liveHandleRef.current?.setGain(nextMuted ? 0 : volume / 10);
   }
 
   return (
@@ -107,10 +114,25 @@ export default function FrequencyTuner({ ear, initialHz = 4000, audioService, on
 
       <div className={styles.sliderWrapper}>
         <div className={styles.sliderRow}>
-          <span className={styles.sliderIcon}>Vol</span>
+          <button
+            className={styles.muteBtn}
+            onClick={handleMuteToggle}
+            aria-label={muted ? 'Unmute' : 'Mute'}
+            aria-pressed={muted}
+          >
+            {muted ? (
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+                <path d="M3.63 3.63a1 1 0 0 0 0 1.41L7.29 8.7 7 9H4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h3l4 4a1 1 0 0 0 1.7-.7v-2.83l4.3 4.3a1 1 0 0 0 1.41-1.41L5.05 3.63a1 1 0 0 0-1.42 0zM19 12c0 .82-.15 1.61-.41 2.34l1.53 1.53A8.9 8.9 0 0 0 21 12c0-4.28-3-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zm-7-8l-1.88 1.88L12 7.76zm4.5 8c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.48c.01-.08.02-.16.02-.24z"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+              </svg>
+            )}
+          </button>
           <input
             type="range"
-            className={styles.slider}
+            className={`${styles.slider}${muted ? ` ${styles.sliderMuted}` : ''}`}
             min={1}
             max={10}
             step={1}
@@ -118,7 +140,7 @@ export default function FrequencyTuner({ ear, initialHz = 4000, audioService, on
             onChange={handleVolumeChange}
           />
         </div>
-        <div className={styles.sliderEndLabels}>
+        <div className={`${styles.sliderEndLabels} ${styles.sliderEndLabelsIndented}`}>
           <span>Quiet</span>
           <span>Loud</span>
         </div>
