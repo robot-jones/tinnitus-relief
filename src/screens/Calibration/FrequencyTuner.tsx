@@ -34,29 +34,29 @@ export default function FrequencyTuner({ ear, initialHz = 4000, audioService, on
   const [sliderValue, setSliderValue] = useState(() => hzToSlider(initialHz));
   const [volume, setVolume] = useState(5);
   const liveHandleRef = useRef<LiveToneHandle | null>(null);
-  const cancelledRef = useRef(false);
 
   const currentHz = sliderToHz(sliderValue);
   const earLabel = ear === 'left' ? 'Left ear' : 'Right ear';
 
   useEffect(() => {
-    cancelledRef.current = false;
+    // Local variables — each effect invocation has its own closure,
+    // so StrictMode's double-invoke can't cross-contaminate the flag.
+    let cancelled = false;
+    let handle: LiveToneHandle | null = null;
 
     audioService?.startLoudnessCalibration({
       ear,
       frequencyHz: sliderToHz(hzToSlider(initialHz)),
       initialGain: volume / 10,
-    }).then((handle) => {
-      if (cancelledRef.current) {
-        handle.stop();
-        return;
-      }
-      liveHandleRef.current = handle;
+    }).then((h) => {
+      if (cancelled) { h.stop(); return; }
+      handle = h;
+      liveHandleRef.current = h;
     });
 
     return () => {
-      cancelledRef.current = true;
-      liveHandleRef.current?.stop();
+      cancelled = true;
+      handle?.stop();
       liveHandleRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
