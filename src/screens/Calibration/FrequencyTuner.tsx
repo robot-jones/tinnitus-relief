@@ -7,7 +7,6 @@ import styles from './FrequencyTuner.module.css';
 const MIN_HZ = 250;
 const MAX_HZ = 12000;
 const SLIDER_MAX = 1000;
-const CALIBRATION_GAIN = 0.3;
 
 function sliderToHz(value: number): number {
   const t = value / SLIDER_MAX;
@@ -33,6 +32,7 @@ interface Props {
 
 export default function FrequencyTuner({ ear, initialHz = 4000, audioService, onConfirm }: Props) {
   const [sliderValue, setSliderValue] = useState(() => hzToSlider(initialHz));
+  const [volume, setVolume] = useState(5);
   const liveHandleRef = useRef<LiveToneHandle | null>(null);
   const cancelledRef = useRef(false);
 
@@ -45,7 +45,7 @@ export default function FrequencyTuner({ ear, initialHz = 4000, audioService, on
     audioService?.startLoudnessCalibration({
       ear,
       frequencyHz: sliderToHz(hzToSlider(initialHz)),
-      initialGain: CALIBRATION_GAIN,
+      initialGain: volume / 10,
     }).then((handle) => {
       if (cancelledRef.current) {
         handle.stop();
@@ -62,10 +62,16 @@ export default function FrequencyTuner({ ear, initialHz = 4000, audioService, on
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioService, ear]);
 
-  function handleSliderChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFrequencyChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = Number(e.target.value);
     setSliderValue(value);
     liveHandleRef.current?.setFrequency(sliderToHz(value));
+  }
+
+  function handleVolumeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = Number(e.target.value);
+    setVolume(value);
+    liveHandleRef.current?.setGain(value / 10);
   }
 
   return (
@@ -73,7 +79,7 @@ export default function FrequencyTuner({ ear, initialHz = 4000, audioService, on
       <span className={styles.earTag}>{earLabel}</span>
       <h2 className={styles.title}>Tune to your tinnitus</h2>
       <p className={styles.subtitle}>
-        Drag the slider until the tone matches what you hear. Take your time.
+        Drag the sliders until the tone matches what you hear. Take your time.
       </p>
 
       <div className={styles.freqDisplay}>
@@ -81,18 +87,40 @@ export default function FrequencyTuner({ ear, initialHz = 4000, audioService, on
       </div>
 
       <div className={styles.sliderWrapper}>
-        <input
-          type="range"
-          className={styles.slider}
-          min={0}
-          max={SLIDER_MAX}
-          step={1}
-          value={sliderValue}
-          onChange={handleSliderChange}
-        />
+        <div className={styles.sliderRow}>
+          <span className={styles.sliderIcon}>Hz</span>
+          <input
+            type="range"
+            className={styles.slider}
+            min={0}
+            max={SLIDER_MAX}
+            step={1}
+            value={sliderValue}
+            onChange={handleFrequencyChange}
+          />
+        </div>
         <div className={styles.sliderEndLabels}>
           <span>{fmtHz(MIN_HZ)}</span>
           <span>{fmtHz(MAX_HZ)}</span>
+        </div>
+      </div>
+
+      <div className={styles.sliderWrapper}>
+        <div className={styles.sliderRow}>
+          <span className={styles.sliderIcon}>Vol</span>
+          <input
+            type="range"
+            className={styles.slider}
+            min={1}
+            max={10}
+            step={1}
+            value={volume}
+            onChange={handleVolumeChange}
+          />
+        </div>
+        <div className={styles.sliderEndLabels}>
+          <span>Quiet</span>
+          <span>Loud</span>
         </div>
       </div>
 
