@@ -59,6 +59,12 @@ export class WebAudioAdapter implements AudioAdapter {
         gainNode.gain.linearRampToValueAtTime(0, audioTime);
         oscillator.stop(audioTime + 0.01);
       },
+      cancelAndStop() {
+        gainNode.gain.cancelScheduledValues(ctx.currentTime);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.05);
+        try { oscillator.stop(ctx.currentTime + 0.06); } catch { /* already stopped */ }
+      },
     };
   }
 

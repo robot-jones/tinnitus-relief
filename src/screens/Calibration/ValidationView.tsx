@@ -29,23 +29,31 @@ export default function ValidationView({
     ? `${Math.round(frequencyHz)} Hz`
     : `${(frequencyHz / 1000).toFixed(2)} kHz`;
 
+  const stopToneRef = useRef<(() => void) | null>(null);
   const playTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function playTone() {
     if (playing || !audioService) return;
     setPlaying(true);
-    await audioService.playValidationTone({
+    const stopFn = await audioService.playValidationTone({
       ear,
       frequencyHz,
       durationS: VALIDATION_DURATION_S,
       gainValue: VALIDATION_GAIN,
     });
-    playTimerRef.current = setTimeout(() => setPlaying(false), VALIDATION_DURATION_S * 1000);
+    stopToneRef.current = stopFn;
+    playTimerRef.current = setTimeout(() => {
+      setPlaying(false);
+      stopToneRef.current = null;
+    }, VALIDATION_DURATION_S * 1000);
   }
 
   useEffect(() => {
     playTone();
     return () => {
+      // Cancel the oscillator if component unmounts mid-play
+      stopToneRef.current?.();
+      stopToneRef.current = null;
       if (playTimerRef.current) clearTimeout(playTimerRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -25,16 +25,25 @@ export default function LoudnessView({ ear, frequencyHz, audioService, onSave }:
     : `${(frequencyHz / 1000).toFixed(2)} kHz`;
 
   useEffect(() => {
+    let cancelled = false;
     let handle: LiveToneHandle | null = null;
+
     audioService?.startLoudnessCalibration({
       ear,
       frequencyHz,
       initialGain: levelToGain(5),
     }).then((h) => {
+      if (cancelled) {
+        // Component already unmounted — stop immediately so no tone leaks
+        h.stop();
+        return;
+      }
       handle = h;
       liveToneRef.current = h;
     });
+
     return () => {
+      cancelled = true;
       handle?.stop();
       liveToneRef.current = null;
     };

@@ -40,4 +40,7 @@ export interface ToneHandle {
 
   /** Stop the oscillator at `audioTime`. */
   stop(audioTime: number): void;
+
+  /** Cancel all scheduled events and fade out immediately (~50ms). */
+  cancelAndStop(): void;
 }

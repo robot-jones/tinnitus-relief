@@ -223,17 +223,21 @@ export class AudioService {
     return {
       stop() {
         clearTimeout(timer);
+        // Cancel all scheduled audio events and fade out immediately so the
+        // oscillator doesn't keep playing after the user taps.
+        handle.cancelAndStop();
       },
     };
   }
 
-  /** Play a single validation tone at a fixed frequency. */
+  /** Play a single validation tone at a fixed frequency.
+   *  Returns a stop function that cancels the tone early if needed. */
   async playValidationTone(options: {
     ear: 'left' | 'right';
     frequencyHz: number;
     durationS: number;
     gainValue: number;
-  }): Promise<void> {
+  }): Promise<() => void> {
     await this.audio.resume();
     const { ear, frequencyHz, durationS, gainValue } = options;
     const handle = this.audio.createTone({ frequencyHz, ear, gainValue: 0 });
@@ -244,6 +248,7 @@ export class AudioService {
     handle.scheduleGain(gainValue, endTime - 0.05);
     handle.scheduleGain(0, endTime);
     handle.stop(endTime + 0.01);
+    return () => handle.cancelAndStop();
   }
 
   /** Expose audio clock for sweep frequency calculation. */
