@@ -195,68 +195,11 @@ export class AudioService {
     this.activeTone = handle;
   }
 
-  /** Sweep adapter — used by calibration, not sessions. */
-  async startCalibrationSweep(options: {
-    ear: 'left' | 'right';
-    startHz: number;
-    endHz: number;
-    durationS: number;
-    gainValue: number;
-    onComplete(): void;
-  }): Promise<{ stop(): void }> {
-    await this.audio.resume();
-
-    const { ear, startHz, endHz, durationS, gainValue, onComplete } = options;
-    const handle = this.audio.createTone({ frequencyHz: startHz, ear, gainValue: 0 });
-    const startTime = this.audio.currentTime() + 0.05;
-    const endTime = startTime + durationS;
-
-    handle.start(startTime);
-    handle.scheduleGain(gainValue, startTime + 0.1);
-    handle.scheduleFrequency(endHz, endTime - 0.1);
-    handle.scheduleGain(gainValue, endTime - 0.1);
-    handle.scheduleGain(0, endTime);
-    handle.stop(endTime + 0.01);
-
-    const timer = setTimeout(onComplete, durationS * 1000);
-
-    return {
-      stop() {
-        clearTimeout(timer);
-        // Cancel all scheduled audio events and fade out immediately so the
-        // oscillator doesn't keep playing after the user taps.
-        handle.cancelAndStop();
-      },
-    };
-  }
-
-  /** Play a single validation tone at a fixed frequency.
-   *  Returns a stop function that cancels the tone early if needed. */
-  async playValidationTone(options: {
-    ear: 'left' | 'right';
-    frequencyHz: number;
-    durationS: number;
-    gainValue: number;
-  }): Promise<() => void> {
-    await this.audio.resume();
-    const { ear, frequencyHz, durationS, gainValue } = options;
-    const handle = this.audio.createTone({ frequencyHz, ear, gainValue: 0 });
-    const startTime = this.audio.currentTime() + 0.05;
-    const endTime = startTime + durationS;
-    handle.start(startTime);
-    handle.scheduleGain(gainValue, startTime + 0.05);
-    handle.scheduleGain(gainValue, endTime - 0.05);
-    handle.scheduleGain(0, endTime);
-    handle.stop(endTime + 0.01);
-    return () => handle.cancelAndStop();
-  }
-
-  /** Expose audio clock for sweep frequency calculation. */
   audioCurrentTime(): number {
     return this.audio.currentTime();
   }
 
-  /** Start a live tone for loudness calibration — gain adjustable in real time. */
+  /** Start a live calibration tone — frequency and gain both adjustable in real time. */
   async startLoudnessCalibration(options: {
     ear: 'left' | 'right';
     frequencyHz: number;

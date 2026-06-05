@@ -95,6 +95,9 @@ export class WebAudioAdapter implements AudioAdapter {
       setGain(value: number) {
         gainNode.gain.setTargetAtTime(value, ctx.currentTime, 0.02);
       },
+      setFrequency(hz: number) {
+        oscillator.frequency.setTargetAtTime(hz, ctx.currentTime, 0.01);
+      },
       stop() {
         gainNode.gain.setTargetAtTime(0, ctx.currentTime, 0.02);
         oscillator.stop(ctx.currentTime + 0.1);
