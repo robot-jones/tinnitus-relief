@@ -82,6 +82,60 @@
   color: var(--color-accent);
 }
 
+.volumeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.volumeValue {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-full);
+  outline: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  border: none;
+  cursor: pointer;
+}
+
+.sliderCap {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
 .iosWarning {
   padding: var(--space-3) var(--space-4);
   background: var(--color-surface);

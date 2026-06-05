@@ -25,7 +25,7 @@ export default function CalibrationDoneView({ completedEar, profile, onCalibrate
     <div className={styles.container}>
       <div className={styles.checkmark}>✓</div>
       <h2 className={styles.title}>{completedEarLabel} calibrated</h2>
-      {hzLabel && <p className={styles.hz}>{hzLabel} · Level {earProfile?.loudnessLevel}/10</p>}
+      {hzLabel && <p className={styles.hz}>{hzLabel}</p>}
 
       {!otherDone && (
         <div className={styles.actions}>

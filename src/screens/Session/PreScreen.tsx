@@ -6,7 +6,9 @@ const DURATION_OPTIONS = [5, 10, 15, 20, 30];
 interface Props {
   profile: Profile;
   durationMinutes: number;
+  volumeLevel: number;
   onChangeDuration(minutes: number): void;
+  onChangeVolume(level: number): void;
   onStart(): void;
 }
 
@@ -14,7 +16,14 @@ function fmtHz(hz: number): string {
   return hz < 1000 ? `${hz} Hz` : `${(hz / 1000).toFixed(2)} kHz`;
 }
 
-export default function PreScreen({ profile, durationMinutes, onChangeDuration, onStart }: Props) {
+export default function PreScreen({
+  profile,
+  durationMinutes,
+  volumeLevel,
+  onChangeDuration,
+  onChangeVolume,
+  onStart,
+}: Props) {
   const { left, right } = profile.ears;
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -27,14 +36,12 @@ export default function PreScreen({ profile, durationMinutes, onChangeDuration, 
           <div className={styles.earRow}>
             <span className={styles.earLabel}>Left</span>
             <span className={styles.earHz}>{fmtHz(left.frequencyHz)}</span>
-            <span className={styles.earLevel}>Vol {left.loudnessLevel}/10</span>
           </div>
         )}
         {right && (
           <div className={styles.earRow}>
             <span className={styles.earLabel}>Right</span>
             <span className={styles.earHz}>{fmtHz(right.frequencyHz)}</span>
-            <span className={styles.earLevel}>Vol {right.loudnessLevel}/10</span>
           </div>
         )}
       </div>
@@ -51,6 +58,26 @@ export default function PreScreen({ profile, durationMinutes, onChangeDuration, 
               {m}m
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.volumeHeader}>
+          <span className={styles.sectionLabel}>Volume</span>
+          <span className={styles.volumeValue}>{volumeLevel} / 10</span>
+        </div>
+        <div className={styles.sliderRow}>
+          <span className={styles.sliderCap}>Quiet</span>
+          <input
+            type="range"
+            className={styles.slider}
+            min={1}
+            max={10}
+            step={1}
+            value={volumeLevel}
+            onChange={(e) => onChangeVolume(Number(e.target.value))}
+          />
+          <span className={styles.sliderCap}>Loud</span>
         </div>
       </div>
 

@@ -202,7 +202,7 @@ export default function SettingsScreen() {
               <div className={styles.earInfo}>
                 <span className={styles.rowLabel}>{ear[0].toUpperCase() + ear.slice(1)} ear</span>
                 {ep ? (
-                  <span className={styles.earHz}>{fmtHz(ep.frequencyHz)} · Level {ep.loudnessLevel}/10</span>
+                  <span className={styles.earHz}>{fmtHz(ep.frequencyHz)}</span>
                 ) : (
                   <span className={styles.earNotSet}>Not calibrated</span>
                 )}

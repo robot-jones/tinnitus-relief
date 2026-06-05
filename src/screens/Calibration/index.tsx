@@ -9,7 +9,6 @@ import EarSelector from './EarSelector';
 import SweepView from './SweepView';
 import OfferPass3 from './OfferPass3';
 import ValidationView from './ValidationView';
-import LoudnessView from './LoudnessView';
 import CalibrationDoneView from './CalibrationDoneView';
 import styles from './Calibration.module.css';
 
@@ -18,7 +17,6 @@ type CalibrationStep =
   | { step: 'sweeping'; ear: Ear; pass: 1 | 2 | 3; passFreqs: number[] }
   | { step: 'offer-pass3'; ear: Ear; detectedHz: number }
   | { step: 'validating'; ear: Ear; frequencyHz: number; passesCompleted: 1 | 2 | 3 }
-  | { step: 'loudness'; ear: Ear; frequencyHz: number; passesCompleted: 1 | 2 | 3 }
   | { step: 'ear-done'; completedEar: Ear }
   | { step: 'complete' };
 
@@ -47,7 +45,6 @@ export default function CalibrationScreen() {
 
   const [phase, setPhase] = useState<CalibrationStep>({ step: 'ear-select' });
 
-  // Sweep state shared between CalibrationScreen and SweepView
   const sweepActiveRef = useRef(false);
   const sweepParamsRef = useRef<SweepParams>({ startHz: 250, endHz: 12000, durationS: 20, startAudioTime: 0 });
   const currentSweepStopRef = useRef<(() => void) | null>(null);
@@ -99,7 +96,6 @@ export default function CalibrationScreen() {
     const svc = audioServiceRef.current;
     if (!svc) return;
 
-    // Compute frequency at tap moment using exponential interpolation
     const { startHz, endHz, durationS, startAudioTime } = sweepParamsRef.current;
     const elapsed = svc.audioCurrentTime() - startAudioTime;
     const t = Math.min(Math.max(elapsed / durationS, 0), 1);
@@ -110,12 +106,10 @@ export default function CalibrationScreen() {
     const newPassFreqs = [...passFreqs, detectedHz];
 
     if (pass === 1) {
-      // Auto-start pass 2
       beginSweep(ear, 2, newPassFreqs);
     } else if (pass === 2) {
       setPhase({ step: 'offer-pass3', ear, detectedHz });
     } else {
-      // Pass 3 done → validate
       setPhase({ step: 'validating', ear, frequencyHz: detectedHz, passesCompleted: 3 });
     }
   }
@@ -132,23 +126,10 @@ export default function CalibrationScreen() {
     setPhase({ step: 'validating', ear, frequencyHz: detectedHz, passesCompleted: 2 });
   }
 
-  function handleValidationConfirm(ear: Ear, frequencyHz: number, passesCompleted: 1 | 2 | 3) {
-    setPhase({ step: 'loudness', ear, frequencyHz, passesCompleted });
-  }
-
-  function handleValidationResweep(ear: Ear) {
-    beginSweep(ear, 1, []);
-  }
-
-  async function handleLoudnessSave(
-    ear: Ear,
-    frequencyHz: number,
-    passesCompleted: 1 | 2 | 3,
-    loudnessLevel: number,
-  ) {
+  async function handleValidationConfirm(ear: Ear, frequencyHz: number, passesCompleted: 1 | 2 | 3) {
     const earProfile: EarProfile = {
       frequencyHz: Math.round(frequencyHz),
-      loudnessLevel,
+      loudnessLevel: 5,  // not calibrated; volume is set per-session on the pre-screen
       loudnessDbHL: null,
       calibratedAt: new Date().toISOString(),
       passesCompleted,
@@ -159,9 +140,13 @@ export default function CalibrationScreen() {
     setPhase({ step: 'ear-done', completedEar: ear });
   }
 
+  function handleValidationResweep(ear: Ear) {
+    beginSweep(ear, 1, []);
+  }
+
   function handleEarDoneContinue(completedEar: Ear) {
     const otherEar: Ear = completedEar === 'left' ? 'right' : 'left';
-    const otherCalibrated = profile?.ears[otherEar] !== null && profile?.ears[otherEar] !== undefined;
+    const otherCalibrated = profile?.ears[otherEar] != null;
     if (otherCalibrated) {
       setPhase({ step: 'complete' });
     } else {
@@ -182,12 +167,7 @@ export default function CalibrationScreen() {
   function renderStep() {
     switch (phase.step) {
       case 'ear-select':
-        return (
-          <EarSelector
-            profile={profile}
-            onSelectEar={handleSelectEar}
-          />
-        );
+        return <EarSelector profile={profile} onSelectEar={handleSelectEar} />;
 
       case 'sweeping':
         return (
@@ -219,19 +199,6 @@ export default function CalibrationScreen() {
             audioService={audioServiceRef.current}
             onConfirm={() => handleValidationConfirm(phase.ear, phase.frequencyHz, phase.passesCompleted)}
             onResweep={() => handleValidationResweep(phase.ear)}
-          />
-        );
-
-      case 'loudness':
-        return (
-          <LoudnessView
-            ear={phase.ear}
-            frequencyHz={phase.frequencyHz}
-            passesCompleted={phase.passesCompleted}
-            audioService={audioServiceRef.current}
-            onSave={(loudnessLevel) =>
-              handleLoudnessSave(phase.ear, phase.frequencyHz, phase.passesCompleted, loudnessLevel)
-            }
           />
         );
 

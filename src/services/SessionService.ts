@@ -18,14 +18,9 @@ function deriveCompletionStatus(pct: number): CompletionStatus {
   return 'abandoned';
 }
 
-function buildConfig(profile: Profile, settings: Settings): SessionConfig {
+function buildConfig(profile: Profile, settings: Settings, volumeLevel: number): SessionConfig {
   const leftHz = profile.ears.left?.frequencyHz;
   const rightHz = profile.ears.right?.frequencyHz;
-
-  const loudnessLevel =
-    profile.ears.left?.loudnessLevel ??
-    profile.ears.right?.loudnessLevel ??
-    5;
 
   return {
     toneOnMs: settings.defaultToneOnMs,
@@ -35,14 +30,14 @@ function buildConfig(profile: Profile, settings: Settings): SessionConfig {
       ...(leftHz !== undefined ? { left: leftHz } : {}),
       ...(rightHz !== undefined ? { right: rightHz } : {}),
     },
-    volumeLevel: loudnessLevel,
+    volumeLevel,
   };
 }
 
 export class SessionService {
   constructor(private storage: StorageAdapter) {}
 
-  async startSession(profile: Profile, settings: Settings): Promise<Session> {
+  async startSession(profile: Profile, settings: Settings, volumeLevel = 5): Promise<Session> {
     const ears =
       profile.ears.left && profile.ears.right
         ? 'both'
@@ -57,7 +52,7 @@ export class SessionService {
       durationTarget: settings.defaultSessionDurationS,
       durationActual: 0,
       ears,
-      config: buildConfig(profile, settings),
+      config: buildConfig(profile, settings, volumeLevel),
       completionPct: 0,
       completionStatus: 'abandoned',
       postSessionFeeling: null,

@@ -28,6 +28,7 @@ export default function SessionScreen() {
   const [durationMinutes, setDurationMinutes] = useState(
     Math.round(settings.defaultSessionDurationS / 60),
   );
+  const [volumeLevel, setVolumeLevel] = useState(5);
 
   useEffect(() => {
     const adapter = new WebAudioAdapter();
@@ -63,7 +64,7 @@ export default function SessionScreen() {
       defaultSessionDurationS: durationMinutes * 60,
     };
 
-    const session = await sessionService.startSession(profile, overriddenSettings);
+    const session = await sessionService.startSession(profile, overriddenSettings, volumeLevel);
     const wakeLockGranted = await requestWakeLock();
 
     await audioRef.current.start(session.config, {
@@ -114,7 +115,9 @@ export default function SessionScreen() {
         <PreScreen
           profile={profile}
           durationMinutes={durationMinutes}
+          volumeLevel={volumeLevel}
           onChangeDuration={setDurationMinutes}
+          onChangeVolume={setVolumeLevel}
           onStart={handleStart}
         />
       )}
