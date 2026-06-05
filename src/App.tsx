@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useProfile } from './contexts/ProfileContext';
 import Layout from './components/Layout/Layout';
@@ -11,9 +12,18 @@ function RootRedirect() {
   return <Navigate to={settings.onboardingComplete ? '/session' : '/calibration'} replace />;
 }
 
+function ThemeSync() {
+  const { settings } = useProfile();
+  useEffect(() => {
+    document.documentElement.dataset.theme = settings.theme;
+  }, [settings.theme]);
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <ThemeSync />
       <Layout>
         <Routes>
           <Route path="/" element={<RootRedirect />} />
