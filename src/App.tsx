@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useProfile } from './contexts/ProfileContext';
+import Layout from './components/Layout/Layout';
 import CalibrationScreen from './screens/Calibration';
 import SessionScreen from './screens/Session';
 import HistoryScreen from './screens/History';
@@ -13,14 +14,16 @@ function RootRedirect() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<RootRedirect />} />
-        <Route path="/calibration" element={<CalibrationScreen />} />
-        <Route path="/session" element={<SessionScreen />} />
-        <Route path="/history" element={<HistoryScreen />} />
-        <Route path="/settings" element={<SettingsScreen />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="/calibration" element={<CalibrationScreen />} />
+          <Route path="/session" element={<SessionScreen />} />
+          <Route path="/history" element={<HistoryScreen />} />
+          <Route path="/settings" element={<SettingsScreen />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 }

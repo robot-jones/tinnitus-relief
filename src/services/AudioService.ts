@@ -39,6 +39,10 @@ export class AudioService {
     return this.state;
   }
 
+  setCallbacks(callbacks: AudioServiceCallbacks): void {
+    this.callbacks = callbacks;
+  }
+
   /** Elapsed session time in seconds, excluding paused time. */
   elapsedSeconds(): number {
     if (this.state === 'idle' || this.state === 'stopped') return 0;
