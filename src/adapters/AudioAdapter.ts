@@ -7,6 +7,8 @@ export interface ToneOptions {
 export interface LiveToneHandle {
   /** Smoothly ramp gain to value (0–1) immediately. */
   setGain(value: number): void;
+  /** Jump to a new frequency immediately (used for real-time slider control). */
+  setFrequency(hz: number): void;
   stop(): void;
 }
 
