@@ -4,6 +4,12 @@ export interface ToneOptions {
   gainValue: number;
 }
 
+export interface LiveToneHandle {
+  /** Smoothly ramp gain to value (0–1) immediately. */
+  setGain(value: number): void;
+  stop(): void;
+}
+
 export interface AudioAdapter {
   /** Resume or create the AudioContext (must be called from a user gesture). */
   resume(): Promise<void>;
@@ -14,6 +20,9 @@ export interface AudioAdapter {
   /** Create an oscillator + gain node wired to the appropriate stereo channel.
    *  Returns a handle used to schedule and stop the tone. */
   createTone(options: ToneOptions): ToneHandle;
+
+  /** Start a continuously-playing tone whose gain can be adjusted in real time. */
+  startLiveTone(options: Omit<ToneOptions, 'gainValue'>): LiveToneHandle;
 
   /** Release all audio resources. */
   dispose(): void;

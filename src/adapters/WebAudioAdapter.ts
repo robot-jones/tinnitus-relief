@@ -1,4 +1,4 @@
-import type { AudioAdapter, ToneHandle, ToneOptions } from './AudioAdapter';
+import type { AudioAdapter, LiveToneHandle, ToneHandle, ToneOptions } from './AudioAdapter';
 
 export class WebAudioAdapter implements AudioAdapter {
   private ctx: AudioContext | null = null;
@@ -58,6 +58,40 @@ export class WebAudioAdapter implements AudioAdapter {
       stop(audioTime: number) {
         gainNode.gain.linearRampToValueAtTime(0, audioTime);
         oscillator.stop(audioTime + 0.01);
+      },
+    };
+  }
+
+  startLiveTone(options: Omit<ToneOptions, 'gainValue'>): LiveToneHandle {
+    const ctx = this.getContext();
+    const merger = this.merger!;
+
+    const oscillator = ctx.createOscillator();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = options.frequencyHz;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = 0;
+
+    oscillator.connect(gainNode);
+
+    if (options.ear === 'both') {
+      gainNode.connect(merger, 0, 0);
+      gainNode.connect(merger, 0, 1);
+    } else {
+      const channel = options.ear === 'left' ? 0 : 1;
+      gainNode.connect(merger, 0, channel);
+    }
+
+    oscillator.start();
+
+    return {
+      setGain(value: number) {
+        gainNode.gain.setTargetAtTime(value, ctx.currentTime, 0.02);
+      },
+      stop() {
+        gainNode.gain.setTargetAtTime(0, ctx.currentTime, 0.02);
+        oscillator.stop(ctx.currentTime + 0.1);
       },
     };
   }

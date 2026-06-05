@@ -1,4 +1,4 @@
-import type { AudioAdapter, ToneHandle } from '../adapters/AudioAdapter';
+import type { AudioAdapter, LiveToneHandle, ToneHandle } from '../adapters/AudioAdapter';
 import type { SessionConfig } from '../types';
 
 const LOOKAHEAD_S = 0.1;
@@ -240,5 +240,25 @@ export class AudioService {
     handle.scheduleGain(gainValue, endTime - 0.05);
     handle.scheduleGain(0, endTime);
     handle.stop(endTime + 0.01);
+  }
+
+  /** Expose audio clock for sweep frequency calculation. */
+  audioCurrentTime(): number {
+    return this.audio.currentTime();
+  }
+
+  /** Start a live tone for loudness calibration — gain adjustable in real time. */
+  async startLoudnessCalibration(options: {
+    ear: 'left' | 'right';
+    frequencyHz: number;
+    initialGain: number;
+  }): Promise<LiveToneHandle> {
+    await this.audio.resume();
+    const handle = this.audio.startLiveTone({
+      frequencyHz: options.frequencyHz,
+      ear: options.ear,
+    });
+    handle.setGain(options.initialGain);
+    return handle;
   }
 }
